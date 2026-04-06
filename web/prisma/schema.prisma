@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ActionCategory {
+  SUSTAINABILITY
+  CIVIC
+  LEARNING
+}
+
+enum MissionTrack {
+  PERSONAL
+  COMMUNITY
+}
+
+enum IssueStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum FeedPostType {
+  MISSION_COMPLETED
+  ISSUE_REPORTED
+  ISSUE_RESOLVED
+  DRIVE_JOINED
+  DRIVE_CHECKED_IN
+  LEARNING_COMPLETED
+}
+
+enum DriveParticipantStatus {
+  JOINED
+  CHECKED_IN
+}
+
+model User {
+  id                  String             @id @default(cuid())
+  name                String
+  email               String             @unique
+  passwordHash        String
+  avatarUrl           String?
+  xp                  Int                @default(0)
+  level               Int                @default(1)
+  streak              Int                @default(0)
+  impactCo2           Float              @default(0)
+  civicPoints         Int                @default(0)
+  ward                String
+  inviteCode          String             @unique
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  actions             UserAction[]
+  issues              Issue[]
+  feedPosts           FeedPost[]
+  driveParticipations DriveParticipant[]
+  postLikes           FeedLike[]
+  postComments        FeedComment[]
+  learningProgress    LearningProgress[]
+  badges              UserBadge[]
+  createdDrives       Drive[]            @relation("DriveCreator")
+}
+
+model Action {
+  id               String           @id @default(cuid())
+  slug             String           @unique
+  title            String
+  description      String
+  xpValue          Int
+  impactValue      Float
+  category         ActionCategory
+  missionTrack     MissionTrack
+  targetCount      Int              @default(1)
+  countdownMins    Int              @default(1440)
+  icon             String
+  createdAt        DateTime         @default(now())
+  userActions      UserAction[]
+  learningProgress LearningProgress[]
+
+  @@index([category, missionTrack])
+}
+
+model UserAction {
+  id             String   @id @default(cuid())
+  userId         String
+  actionId       String
+  completedCount Int      @default(1)
+  timestamp      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action         Action   @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, timestamp])
+}
+
+model Issue {
+  id            String        @id @default(cuid())
+  userId        String
+  imageUrl      String
+  description   String?
+  category      String
+  status        IssueStatus   @default(OPEN)
+  latitude      Float
+  longitude     Float
+  locationLabel String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  timeline      IssueTimeline[]
+
+  @@index([status, createdAt])
+}
+
+model IssueTimeline {
+  id        String      @id @default(cuid())
+  issueId   String
+  status    IssueStatus
+  note      String
+  createdAt DateTime    @default(now())
+  issue     Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  @@index([issueId, createdAt])
+}
+
+model Drive {
+  id           String             @id @default(cuid())
+  title        String
+  description  String
+  locationLabel String
+  latitude     Float
+  longitude    Float
+  date         DateTime
+  ward         String
+  createdById  String
+  createdAt    DateTime           @default(now())
+  participants DriveParticipant[]
+  createdBy    User               @relation("DriveCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([date, ward])
+}
+
+model DriveParticipant {
+  id          String                 @id @default(cuid())
+  driveId     String
+  userId      String
+  status      DriveParticipantStatus @default(JOINED)
+  checkedInAt DateTime?
+  createdAt   DateTime               @default(now())
+  drive       Drive                  @relation(fields: [driveId], references: [id], onDelete: Cascade)
+  user        User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([driveId, userId])
+  @@index([userId, createdAt])
+}
+
+model FeedPost {
+  id        String       @id @default(cuid())
+  userId    String
+  type      FeedPostType
+  content   String
+  xpEarned  Int          @default(0)
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes     FeedLike[]
+  comments  FeedComment[]
+
+  @@index([createdAt])
+}
+
+model FeedLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model FeedComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  post      FeedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+}
+
+model Badge {
+  id          String     @id @default(cuid())
+  key         String     @unique
+  title       String
+  tier        String
+  description String
+  thresholdXp Int
+  icon        String
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge    Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+model LearningProgress {
+  id          String   @id @default(cuid())
+  userId      String
+  actionId    String
+  moduleKey   String
+  score       Int
+  completedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action      Action   @relation(fields: [actionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt])
+  @@index([userId, moduleKey])
+}

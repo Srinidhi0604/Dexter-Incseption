@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+:root {
+  --cp-bg: #0b0b0b;
+  --cp-card: #1a1a1a;
+  --cp-card-soft: #202020;
+  --cp-text: #f3f6fb;
+  --cp-muted: #9aa8bc;
+  --cp-blue: #38bdf8;
+  --cp-green: #34d399;
+  --cp-amber: #fbbf24;
+}
+
+@theme inline {
+  --color-background: var(--cp-bg);
+  --color-foreground: var(--cp-text);
+  --font-sans: var(--font-body);
+}
+
+body {
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: var(--font-body), sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+.font-display {
+  font-family: var(--font-display), sans-serif;
+}

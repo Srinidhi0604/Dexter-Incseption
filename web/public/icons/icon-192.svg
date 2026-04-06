@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192" fill="none">
+  <rect width="192" height="192" rx="44" fill="#0B0B0B" />
+  <rect x="18" y="18" width="156" height="156" rx="34" fill="url(#bg)" fill-opacity="0.2" />
+  <path d="M96 40C113.673 40 128 54.327 128 72C128 83.763 121.653 94.042 112.2 99.6L112.201 131.999C112.201 140.836 105.038 148 96.201 148C87.3645 148 80.2012 140.836 80.2012 132L80.2 99.6C70.7474 94.042 64.4004 83.763 64.4004 72C64.4004 54.327 78.7274 40 96.4004 40H96Z" fill="url(#pulse)" />
+  <circle cx="96" cy="72" r="14" fill="#0B0B0B" />
+  <defs>
+    <linearGradient id="bg" x1="18" y1="18" x2="174" y2="174" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8" />
+      <stop offset="1" stop-color="#10B981" />
+    </linearGradient>
+    <linearGradient id="pulse" x1="96" y1="40" x2="96" y2="148" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#38BDF8" />
+      <stop offset="0.55" stop-color="#10B981" />
+      <stop offset="1" stop-color="#FBBF24" />
+    </linearGradient>
+  </defs>
+</svg>
